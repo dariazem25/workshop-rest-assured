@@ -1,0 +1,119 @@
+Test case 1 - Request pokemon
+Preconditions:
+1. Some pokemons exist
+
+Actions:
+1. Send GET request https://pokeapi.co/api/v2/pokemon/rattata
+
+Result:
+1. Response is received:
+- 200 status code
+- rattatta pokemon is received
+
+------------------------------------------------------------------------------------------------------------------------
+Test case 2 - Request non-existent pokemon
+Preconditions:
+1. Some pokemons exist
+
+Actions:
+1. Send GET request https://pokeapi.co/api/v2/pokemon/aaaaZZZ
+
+Result:
+1. Response is received:
+- 404 status code
+- Not found
+
+------------------------------------------------------------------------------------------------------------------------
+Test case 3 - Compare pokemons
+Preconditions:
+1. Rattata and pidgeotto pokemons exist
+
+Actions:
+1. Send GET request https://pokeapi.co/api/v2/pokemon/rattata
+2. Send GET request https://pokeapi.co/api/v2/pokemon/pidgeotto
+3. Compare rattata's weight and pidgeotto's weight
+4. Check an ability 'run-away' for rattata pokemon
+5. Check an ability 'run-away' for pidgeotto pokemon
+
+Result:
+1. Response is received with 200 status code and with rattata pokemon
+2. Response is received with 200 status code and with pidgeotto pokemon
+3. Rattata's weight is less than pidgeotto's weight
+4. Rattata pokemon has ability 'run-away'
+5. Pidgeotto pokemon doesn't have ability 'run-away'
+
+------------------------------------------------------------------------------------------------------------------------
+Test case 4 - List of pokemons
+Preconditions:
+1. Some pokemons exist
+2. The amount of pokemons = 1279
+
+Actions:
+1. Send GET request https://pokeapi.co/api/v2/pokemon?limit=5
+
+Result:
+1. Response is received:
+- 200 status code
+- 5 pokemons
+- each pokemon has 'name'
+
+------------------------------------------------------------------------------------------------------------------------
+Test case 5 - List of pokemons - without limit
+Preconditions:
+1. Some pokemons exist
+2. The amount of pokemons = 1279
+
+Actions:
+1. Send GET request https://pokeapi.co/api/v2/pokemon?limit=0
+2. Send GET request https://pokeapi.co/api/v2/pokemon
+
+Result:
+1. Response is received:
+- 200 status code
+- 20 pokemons (default value)
+2. Response is received:
+- 200 status code
+- 20 pokemons (default value)
+
+------------------------------------------------------------------------------------------------------------------------
+Test case 6 - List of pokemons - limit less than zero
+Preconditions:
+1. Some pokemons exist
+2. The amount of pokemons = 1279
+
+Actions:
+1. Send GET request https://pokeapi.co/api/v2/pokemon?limit=-1
+
+Result:
+1. Response is received:
+- 200 status code
+- 1278 pokemons
+
+------------------------------------------------------------------------------------------------------------------------
+Test case 7 - List of pokemons - limit greater than max pokemon's size
+Preconditions:
+1. Some pokemons exist
+2. The amount of pokemons = 1279
+
+Actions:
+1. Send GET request https://pokeapi.co/api/v2/pokemon?limit=1280
+
+Result:
+1. Response is received:
+- 200 status code
+- 1279 pokemons
+
+------------------------------------------------------------------------------------------------------------------------
+Test case 7 - List of pokemons - invalid limit
+Preconditions:
+1. Some pokemons exist
+2. The amount of pokemons = 1279
+
+Actions:
+1. Send GET request https://pokeapi.co/api/v2/pokemon?limit=aaa
+
+Result:
+1. Response is received:
+- 200 status code
+- 20 pokemons
+
