@@ -12,5 +12,5 @@ To Generate and open the report in your default browser at:
 
 
 ### Build Status:
-[![Build](https://github.com/dariazem25/workshop-rest-assured/actions/workflows/main.yml/badge.svg)](https://github.com/dariazem25/rest-assured/actions/workflows/main.yml)
+[![Build](https://github.com/dariazem25/workshop-rest-assured/actions/workflows/main.yml/badge.svg)](https://github.com/dariazem25/workshop-rest-assured/actions/workflows/main.yml)
 
