@@ -11,9 +11,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Pokemon {
+public class Pokemons {
 
-    private String name;
-    private Integer weight;
-    private List<Ability> abilities;
+    private List<Result> results;
+    private Integer count;
 }

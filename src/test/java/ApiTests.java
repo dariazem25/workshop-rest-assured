@@ -1,31 +1,30 @@
-import io.restassured.http.ContentType;
-import model.ListPokemons;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import model.Ability;
+import model.Pokemons;
 import model.Pokemon;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import utils.TestUtils;
 
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class ApiTests extends BaseTest {
 
     @Test
     @DisplayName("Get valid pokemon")
-    public void getValidPokemonTest() {
-        Pokemon pokemon = requestSpecification
+    public void getValidPokemonTest() throws JsonProcessingException {
+        String response = requestSpecification
+                .pathParam("name", "rattata")
                 .when()
-                .get(POKEMON_ENDPOINT + "/rattata")
+                    .get(POKEMON_ENDPOINT + "/{name}")
                 .then()
-                .assertThat()
-                .statusCode(200)
-                .and()
-                .assertThat()
-                .contentType(ContentType.JSON)
+                    .spec(responseSpecification)
                 .extract()
-                .as(Pokemon.class);
+                    .body().asString();
+
+        Pokemon pokemon = TestUtils.toPokemon(response);
 
         Assertions.assertFalse(pokemon.getAbilities().isEmpty(), "The pokemon doesn't have abilities");
         Assertions.assertEquals("rattata", pokemon.getName(), "The names different");
@@ -36,53 +35,48 @@ public class ApiTests extends BaseTest {
     @DisplayName("Get non-existent pokemon")
     public void getNonexistentPokemonTest() {
         String actualResult = requestSpecification
+                .pathParam("name", "aaaaZZZ")
                 .when()
-                .get(POKEMON_ENDPOINT + "/aaaaZZZ")
+                    .get(POKEMON_ENDPOINT + "/{name}")
                 .then()
-                .assertThat()
-                .statusCode(404)
-                .extract().body().asString();
+                    .assertThat()
+                    .statusCode(404)
+                .extract()
+                    .body().asString();
 
         Assertions.assertEquals("Not Found", actualResult);
     }
 
     @Test
     @DisplayName("Compare two existent pokemons")
-    public void compareTwoPokemonsTest() {
-        Pokemon rattata = requestSpecification
+    public void compareTwoPokemonsTest() throws JsonProcessingException {
+        String response1 = requestSpecification
+                .pathParam("name", "rattata")
                 .when()
-                .get(POKEMON_ENDPOINT + "/rattata")
+                    .get(POKEMON_ENDPOINT + "/{name}")
                 .then()
-                .assertThat()
-                .statusCode(200)
-                .and()
-                .assertThat()
-                .contentType(ContentType.JSON)
+                    .spec(responseSpecification)
                 .extract()
-                .as(Pokemon.class);
+                    .body().asString();
 
-        Pokemon pidgeotto = requestSpecification
+        String response2 = requestSpecification
+                .pathParam("name", "pidgeotto")
                 .when()
-                .get(POKEMON_ENDPOINT + "/pidgeotto")
+                    .get(POKEMON_ENDPOINT + "/{name}")
                 .then()
-                .assertThat()
-                .statusCode(200)
-                .and()
-                .assertThat()
-                .contentType(ContentType.JSON)
+                    .spec(responseSpecification)
                 .extract()
-                .as(Pokemon.class);
+                    .body().asString();
 
-        var abilityRattata = rattata.getAbilities().stream()
-                .map(a -> a.get("ability"))
-                .filter(a -> a instanceof LinkedHashMap)
-                .filter(a -> ((LinkedHashMap<?, ?>) a).get("name").equals("run-away"))
+        Pokemon rattata = TestUtils.toPokemon(response1);
+        Pokemon pidgeotto = TestUtils.toPokemon(response2);
+
+        List<Ability> abilityRattata = rattata.getAbilities().stream()
+                .filter(a -> a.getName().equals("run-away"))
                 .collect(Collectors.toList());
 
-        var abilityPidgeotto = pidgeotto.getAbilities().stream()
-                .map(a -> a.get("ability"))
-                .filter(a -> a instanceof LinkedHashMap)
-                .filter(a -> ((LinkedHashMap<?, ?>) a).get("name").equals("run-away"))
+        List<Ability> abilityPidgeotto = pidgeotto.getAbilities().stream()
+                .filter(a -> a.getName().equals("run-away"))
                 .collect(Collectors.toList());
 
         Assertions.assertTrue(rattata.getWeight() < pidgeotto.getWeight(), pidgeotto.getName() + "weight more than " + rattata.getWeight());
@@ -92,41 +86,54 @@ public class ApiTests extends BaseTest {
 
     @Test
     @DisplayName("List pokemons")
-    public void getListOfPokemonsTest() {
-        ListPokemons pokemons = requestSpecification
+    public void getListOfPokemonsTest() throws JsonProcessingException {
+        String response = requestSpecification
                 .queryParam("limit", 5)
                 .when()
-                .get(POKEMON_ENDPOINT)
+                    .get(POKEMON_ENDPOINT)
                 .then()
-                .assertThat()
-                .statusCode(200)
-                .and()
-                .assertThat()
-                .contentType(ContentType.JSON)
+                    .spec(responseSpecification)
                 .extract()
-                .as(ListPokemons.class);
+                    .body().asString();
 
-        var names = pokemons.getResults().stream().filter(p -> p.get("name") != null).collect(Collectors.toList());
+        Pokemons pokemons = TestUtils.toPokemons(response);
+
+        var names = pokemons.getResults().stream().filter(p -> p.getName() != null).collect(Collectors.toList());
         Assertions.assertEquals(POKEMONS_COUNT, pokemons.getCount(), "The counts are different");
         Assertions.assertEquals(5, pokemons.getResults().size(), "The count of pokemons does not equal to entered limit");
         Assertions.assertEquals(5, names.size(), "Not each pokemon has name");
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {POKEMON_ENDPOINT + "?limit=0", POKEMON_ENDPOINT})
+    @Test
     @DisplayName("List pokemons without limit")
-    public void getListOfPokemonsWithoutLimitTest(String input) {
-        ListPokemons pokemons = requestSpecification
+    public void getListOfPokemonsWithoutLimitTest() throws JsonProcessingException {
+        String response = requestSpecification
                 .when()
-                .get(input)
+                    .get(POKEMON_ENDPOINT)
                 .then()
-                .assertThat()
-                .statusCode(200)
-                .and()
-                .assertThat()
-                .contentType(ContentType.JSON)
+                    .spec(responseSpecification)
                 .extract()
-                .as(ListPokemons.class);
+                    .body().asString();
+
+        Pokemons pokemons = TestUtils.toPokemons(response);
+
+        Assertions.assertEquals(DEFAULT_LIMIT, pokemons.getResults().size(), "The count are not the same");
+        Assertions.assertEquals(POKEMONS_COUNT, pokemons.getCount(), "The counts are different");
+    }
+
+    @Test
+    @DisplayName("List pokemons without limit")
+    public void getListOfPokemonsWithZeroLimitTest() throws JsonProcessingException {
+        String response = requestSpecification
+                .queryParam("limit", 0)
+                .when()
+                    .get(POKEMON_ENDPOINT)
+                .then()
+                    .spec(responseSpecification)
+                .extract()
+                    .body().asString();
+
+        Pokemons pokemons = TestUtils.toPokemons(response);
 
         Assertions.assertEquals(DEFAULT_LIMIT, pokemons.getResults().size(), "The count are not the same");
         Assertions.assertEquals(POKEMONS_COUNT, pokemons.getCount(), "The counts are different");
@@ -134,19 +141,17 @@ public class ApiTests extends BaseTest {
 
     @Test
     @DisplayName("List pokemons with limit less than zero")
-    public void getListOfPokemonsWitLimitLessThanZeroTest() {
-        final ListPokemons pokemons = requestSpecification
+    public void getListOfPokemonsWitLimitLessThanZeroTest() throws JsonProcessingException {
+        String response = requestSpecification
                 .queryParam("limit", -1)
                 .when()
-                .get(POKEMON_ENDPOINT)
+                    .get(POKEMON_ENDPOINT)
                 .then()
-                .assertThat()
-                .statusCode(200)
-                .and()
-                .assertThat()
-                .contentType(ContentType.JSON)
+                    .spec(responseSpecification)
                 .extract()
-                .as(ListPokemons.class);
+                    .body().asString();
+
+        Pokemons pokemons = TestUtils.toPokemons(response);
 
         Assertions.assertEquals(POKEMONS_COUNT - 1, pokemons.getResults().size(), "The counts are not the same");
         Assertions.assertEquals(POKEMONS_COUNT, pokemons.getCount(), "The counts are different");
@@ -154,19 +159,17 @@ public class ApiTests extends BaseTest {
 
     @Test
     @DisplayName("List pokemons with limit greater than the count of pokemons")
-    public void getListOfPokemonsWitLimitGreaterThanMaxSizeTest() {
-        final ListPokemons pokemons = requestSpecification
+    public void getListOfPokemonsWitLimitGreaterThanMaxSizeTest() throws JsonProcessingException {
+        String response = requestSpecification
                 .queryParam("limit", POKEMONS_COUNT + 1)
                 .when()
-                .get(POKEMON_ENDPOINT)
+                    .get(POKEMON_ENDPOINT)
                 .then()
-                .assertThat()
-                .statusCode(200)
-                .and()
-                .assertThat()
-                .contentType(ContentType.JSON)
+                    .spec(responseSpecification)
                 .extract()
-                .as(ListPokemons.class);
+                    .body().asString();
+
+        Pokemons pokemons = TestUtils.toPokemons(response);
 
         Assertions.assertEquals(POKEMONS_COUNT, pokemons.getResults().size(), "The counts are not the same");
         Assertions.assertEquals(POKEMONS_COUNT, pokemons.getCount(), "The counts are different");
@@ -174,19 +177,17 @@ public class ApiTests extends BaseTest {
 
     @Test
     @DisplayName("List pokemons with invalid limit")
-    public void getListWithInvalidLimitTest() {
-        final ListPokemons pokemons = requestSpecification
+    public void getListWithInvalidLimitTest() throws JsonProcessingException {
+        String response = requestSpecification
                 .queryParam("limit", "aaa")
                 .when()
-                .get(POKEMON_ENDPOINT)
+                    .get(POKEMON_ENDPOINT)
                 .then()
-                .assertThat()
-                .statusCode(200)
-                .and()
-                .assertThat()
-                .contentType(ContentType.JSON)
+                    .spec(responseSpecification)
                 .extract()
-                .as(ListPokemons.class);
+                    .body().asString();
+
+        Pokemons pokemons = TestUtils.toPokemons(response);
 
         Assertions.assertEquals(DEFAULT_LIMIT, pokemons.getResults().size(), "The counts are not the same");
         Assertions.assertEquals(POKEMONS_COUNT, pokemons.getCount(), "The counts are different");
