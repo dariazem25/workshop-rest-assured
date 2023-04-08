@@ -5,15 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Pokemon {
+public class Abilities {
 
-    private String name;
-    private Integer weight;
-    private List<Abilities> abilities;
+    private Ability ability;
 }

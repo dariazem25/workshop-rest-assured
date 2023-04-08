@@ -1,50 +1,44 @@
 package utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import model.Ability;
 import model.Pokemon;
 import model.Pokemons;
-import model.Result;
-
-import java.util.ArrayList;
-import java.util.List;
+import specs.Specs;
 
 public class TestUtils {
 
-    public static Pokemon toPokemon(final String json) throws JsonProcessingException {
-        JsonNode pokemonNode = new ObjectMapper().readTree(json);
-        Pokemon pokemon = new Pokemon();
-        List<Ability> abilities = new ArrayList<>();
+    private static final ObjectMapper MAPPER = new ObjectMapper().findAndRegisterModules();
+    private final Specs specs = new Specs();
 
-        for (int i = 0; i < pokemonNode.get("abilities").size(); i++) {
-            String name = pokemonNode.get("abilities").get(i).get("ability").get("name").textValue();
-            Ability ability = new Ability();
-            ability.setName(name);
-            abilities.add(ability);
-        }
-
-        pokemon.setName(pokemonNode.get("name").textValue());
-        pokemon.setWeight(pokemonNode.get("weight").asInt());
-        pokemon.setAbilities(abilities);
-        return pokemon;
+    public static <T> T fromJson(final String json, final TypeReference<T> to) throws JsonProcessingException {
+        return MAPPER.readValue(json, to);
     }
 
-    public static Pokemons toPokemons(final String json) throws JsonProcessingException {
-        JsonNode pokemonsNode = new ObjectMapper().readTree(json);
-        Pokemons pokemons = new Pokemons();
-        List<Result> results = new ArrayList<>();
+    public Pokemon requestPokemon(String endpoint, String pokemonName) throws JsonProcessingException {
+        String response = specs.getRequestSpecification()
+                .pathParam("name", pokemonName)
+                .when()
+                    .get(endpoint + "/{name}")
+                .then()
+                    .spec(specs.getResponseSpecification())
+                .extract()
+                    .body().asString();
 
-        for (int i = 0; i < pokemonsNode.get("results").size(); i++) {
-            String name = pokemonsNode.get("results").get(i).get("name").textValue();
-            Result result = new Result();
-            result.setName(name);
-            results.add(result);
-        }
+        return fromJson(response, new TypeReference<>() {});
+    }
 
-        pokemons.setCount(pokemonsNode.get("count").asInt());
-        pokemons.setResults(results);
-        return pokemons;
+    public Pokemons requestListOfPokemons(String endpoint, Object limit) throws JsonProcessingException {
+        String response = specs.getRequestSpecification()
+                .queryParam("limit", limit)
+                .when()
+                    .get(endpoint)
+                .then()
+                    .spec(specs.getResponseSpecification())
+                .extract()
+                    .body().asString();
+
+        return fromJson(response, new TypeReference<>() {});
     }
 }
