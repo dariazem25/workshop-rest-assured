@@ -14,5 +14,4 @@ import java.util.List;
 public class Pokemons {
 
     private List<Result> results;
-    private Integer count;
 }

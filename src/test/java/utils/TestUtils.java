@@ -41,4 +41,15 @@ public class TestUtils {
 
         return fromJson(response, new TypeReference<>() {});
     }
+
+    public String requestNonExistentPokemon(String endpoint, String pokemonName) {
+        return specs.getRequestSpecification()
+                .pathParam("name", pokemonName)
+                .when()
+                    .get(endpoint + "/{name}")
+                .then()
+                    .spec(specs.getResponseOnNonExistentValueSpecification())
+                .extract()
+                    .body().asString();
+    }
 }

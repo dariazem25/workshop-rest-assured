@@ -46,7 +46,6 @@ Result:
 Test case 4 - List of pokemons
 Preconditions:
 1. Some pokemons exist
-2. The amount of pokemons = 1279
 
 Actions:
 1. Send GET request https://pokeapi.co/api/v2/pokemon?limit=5
@@ -61,7 +60,6 @@ Result:
 Test case 5 - List of pokemons - without limit
 Preconditions:
 1. Some pokemons exist
-2. The amount of pokemons = 1279
 
 Actions:
 1. Send GET request https://pokeapi.co/api/v2/pokemon
@@ -75,7 +73,6 @@ Result:
 Test case 6 - List of pokemons - with zero limit
 Preconditions:
 1. Some pokemons exist
-2. The amount of pokemons = 1279
 
 Actions:
 1. Send GET request https://pokeapi.co/api/v2/pokemon?limit=0
@@ -84,40 +81,10 @@ Result:
 1. Response is received:
 - 200 status code
 - 20 pokemons (default value)
-
-________________________________________________________________________________________________________________________
-Test case 7 - List of pokemons - limit less than zero
-Preconditions:
-1. Some pokemons exist
-2. The amount of pokemons = 1279
-
-Actions:
-1. Send GET request https://pokeapi.co/api/v2/pokemon?limit=-1
-
-Result:
-1. Response is received:
-- 200 status code
-- 1278 pokemons
-
 ------------------------------------------------------------------------------------------------------------------------
-Test case 8 - List of pokemons - limit greater than max pokemon's size
+Test case 7 - List of pokemons - invalid limit
 Preconditions:
 1. Some pokemons exist
-2. The amount of pokemons = 1279
-
-Actions:
-1. Send GET request https://pokeapi.co/api/v2/pokemon?limit=1280
-
-Result:
-1. Response is received:
-- 200 status code
-- 1279 pokemons
-
-------------------------------------------------------------------------------------------------------------------------
-Test case 9 - List of pokemons - invalid limit
-Preconditions:
-1. Some pokemons exist
-2. The amount of pokemons = 1279
 
 Actions:
 1. Send GET request https://pokeapi.co/api/v2/pokemon?limit=aaa

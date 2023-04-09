@@ -23,4 +23,9 @@ public class Specs {
             .expectStatusCode(200)
             .expectContentType(ContentType.JSON)
             .build();
+
+    @Getter
+    private final ResponseSpecification responseOnNonExistentValueSpecification = new ResponseSpecBuilder()
+            .expectStatusCode(404)
+            .build();
 }
