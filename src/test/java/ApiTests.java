@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import specs.Specs;
 import utils.TestUtils;
 
 
@@ -21,10 +20,10 @@ public class ApiTests {
 
     private static final Integer DEFAULT_LIMIT = 20;
     private static final String POKEMON_ENDPOINT = ConfProperties.getProperty("pokemonEndpoint");
+    private static final String POKEMONS_ENDPOINT = ConfProperties.getProperty("pokemonsEndpoint");
     private static final String POKEMON_RATTATA = "rattata";
     private static final String ABILITY_RUN_AWAY = "run-away";
     private final TestUtils testUtils = new TestUtils();
-    private final Specs specs = new Specs();
 
     @BeforeAll
     public static void setup() {
@@ -34,7 +33,7 @@ public class ApiTests {
     @Test
     @DisplayName("Get valid pokemon")
     public void getValidPokemonTest() throws JsonProcessingException {
-        Pokemon pokemon = testUtils.requestPokemon(POKEMON_ENDPOINT, POKEMON_RATTATA);
+        Pokemon pokemon = testUtils.requestPokemon(POKEMON_ENDPOINT, POKEMON_RATTATA, 200);
 
         Assertions.assertFalse(pokemon.getAbilities().isEmpty(), "The pokemon doesn't have abilities");
         Assertions.assertEquals(POKEMON_RATTATA, pokemon.getName(), "The names different");
@@ -44,7 +43,7 @@ public class ApiTests {
     @Test
     @DisplayName("Get non-existent pokemon")
     public void getNonexistentPokemonTest() {
-        String response = testUtils.requestNonExistentPokemon(POKEMON_ENDPOINT, "aaaaZZZ");
+        String response = testUtils.requestNonExistentPokemon(POKEMON_ENDPOINT, "aaaaZZZ", 404);
 
         Assertions.assertTrue(response.contains("Not Found"));
     }
@@ -52,8 +51,8 @@ public class ApiTests {
     @Test
     @DisplayName("Compare two existent pokemons")
     public void compareTwoPokemonsTest() throws JsonProcessingException {
-        Pokemon rattata = testUtils.requestPokemon(POKEMON_ENDPOINT, POKEMON_RATTATA);
-        Pokemon pidgeotto = testUtils.requestPokemon(POKEMON_ENDPOINT, "pidgeotto");
+        Pokemon rattata = testUtils.requestPokemon(POKEMON_ENDPOINT, POKEMON_RATTATA, 200);
+        Pokemon pidgeotto = testUtils.requestPokemon(POKEMON_ENDPOINT, "pidgeotto", 200);
 
         List<Abilities> abilityRattata = rattata.getAbilities().stream()
                 .filter(a -> a.getAbility().getName().equals(ABILITY_RUN_AWAY))
@@ -71,7 +70,7 @@ public class ApiTests {
     @Test
     @DisplayName("List pokemons")
     public void getListOfPokemonsTest() throws JsonProcessingException {
-        Pokemons pokemons = testUtils.requestListOfPokemons(POKEMON_ENDPOINT, 5);
+        Pokemons pokemons = testUtils.requestListOfPokemons(POKEMONS_ENDPOINT, 5, 200);
 
         List<Result> names = pokemons.getResults().stream().filter(p -> p.getName() != null).collect(Collectors.toList());
         Assertions.assertEquals(5, pokemons.getResults().size(), "The count of pokemons does not equal to entered limit");
@@ -81,7 +80,7 @@ public class ApiTests {
     @Test
     @DisplayName("List pokemons without limit")
     public void getListOfPokemonsWithoutLimitTest() throws JsonProcessingException {
-        Pokemons pokemons = testUtils.requestListOfPokemons(POKEMON_ENDPOINT, null);
+        Pokemons pokemons = testUtils.requestListOfPokemons(POKEMONS_ENDPOINT, null, 200);
 
         Assertions.assertEquals(DEFAULT_LIMIT, pokemons.getResults().size(), "The count are not the same");
     }
@@ -89,7 +88,7 @@ public class ApiTests {
     @Test
     @DisplayName("List pokemons with zero limit")
     public void getListOfPokemonsWithZeroLimitTest() throws JsonProcessingException {
-        Pokemons pokemons = testUtils.requestListOfPokemons(POKEMON_ENDPOINT, 0);
+        Pokemons pokemons = testUtils.requestListOfPokemons(POKEMONS_ENDPOINT, 0, 200);
 
         Assertions.assertEquals(DEFAULT_LIMIT, pokemons.getResults().size(), "The count are not the same");
     }
@@ -97,7 +96,7 @@ public class ApiTests {
     @Test
     @DisplayName("List pokemons with invalid limit")
     public void getListWithInvalidLimitTest() throws JsonProcessingException {
-        Pokemons pokemons = testUtils.requestListOfPokemons(POKEMON_ENDPOINT, "aaa");
+        Pokemons pokemons = testUtils.requestListOfPokemons(POKEMONS_ENDPOINT, "aaa", 200);
 
         Assertions.assertEquals(DEFAULT_LIMIT, pokemons.getResults().size(), "The counts are not the same");
     }
